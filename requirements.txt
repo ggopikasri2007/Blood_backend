@@ -11,7 +11,7 @@ greenlet==3.3.2
 h11==0.16.0
 idna==3.11
 passlib==1.7.4
-psycopg2==2.9.11
+psycopg2-binary==2.9.9
 pydantic==2.12.4
 pydantic_core==2.41.5
 python-dotenv==1.2.2
