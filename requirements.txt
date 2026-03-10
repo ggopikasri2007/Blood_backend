@@ -1,0 +1,35 @@
+# Web framework
+fastapi==0.111.1
+
+# ASGI server
+uvicorn[standard]==0.23.2
+
+# Database ORM
+SQLAlchemy==2.1.0
+
+# PostgreSQL driver
+psycopg2-binary==2.9.9
+
+# Pydantic for data validation (comes with FastAPI, but pinned explicitly)
+pydantic==2.5.2
+
+# Password hashing & authentication
+passlib[bcrypt]==1.8.2
+python-jose==3.3.0
+
+# Environment variables
+python-dotenv==1.0.1
+
+# Background tasks / async jobs
+celery==5.3.1
+redis==5.2.0
+
+# CORS middleware
+fastapi-cors==0.0.1
+
+# Testing
+pytest==8.2.2
+httpx==1.4.3
+
+# Optional: Email handling
+email-validator==2.1.1
