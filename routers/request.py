@@ -1,56 +1,71 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, Path
 from sqlalchemy.orm import Session
-from dependencies import get_db
 from models.request import Request
-from schemas.request import RequestCreate, RequestUpdate
+from schemas.request import RequestCreate, RequestUpdate, RequestResponse
+from dependencies import get_db
 
-request_router = APIRouter(
-    prefix="/requests",
-    tags=["Request Blood"]
-)
+# ✅ Router object
+request_router = APIRouter(prefix="/request", tags=["Request"])
 
-# GET ALL REQUESTS
-@request_router.get("/all")
-def all_requests(db: Session = Depends(get_db)):
-    return db.query(Request).all()
-
-# GET REQUEST BY ID
-@request_router.get("/{request_id}")
-def get_request(request_id: int, db: Session = Depends(get_db)):
-    return db.query(Request).filter(Request.request_id == request_id).first()
-
-# CREATE REQUEST
-@request_router.post("/create")
+# 🔹 Create a new patient request
+@request_router.post("/", response_model=RequestResponse)
 def create_request(request: RequestCreate, db: Session = Depends(get_db)):
-    request_db = Request(
-        donor_name=request.donor_name,
+    new_request = Request(
+        patient_name=request.patient_name,
         blood_group=request.blood_group,
         city=request.city,
-        contact_number=request.contact_number,
-        message=request.message
+        units_needed=request.units_needed
     )
-    db.add(request_db)
+    db.add(new_request)
     db.commit()
-    db.refresh(request_db)
-    return request_db
+    db.refresh(new_request)
+    return new_request
 
-# UPDATE REQUEST
-@request_router.put("/update/{request_id}")
-def update_request(request_id: int, request: RequestUpdate, db: Session = Depends(get_db)):
-    request_db = db.query(Request).filter(Request.request_id == request_id).first()
-    request_db.donor_name = request.donor_name
-    request_db.blood_group = request.blood_group
-    request_db.city = request.city
-    request_db.contact_number = request.contact_number
-    request_db.message = request.message
+# 🔹 Get all requests
+@request_router.get("/", response_model=list[RequestResponse])
+def get_requests(db: Session = Depends(get_db)):
+    return db.query(Request).all()
+
+# 🔹 Get a specific request by ID
+@request_router.get("/{request_id}", response_model=RequestResponse)
+def get_request(request_id: int = Path(...), db: Session = Depends(get_db)):
+    request = db.query(Request).filter(Request.request_id == request_id).first()
+    if not request:
+        raise HTTPException(status_code=404, detail="Request not found")
+    return request
+
+# 🔹 Update a request (e.g., units_received or status)
+@request_router.put("/{request_id}", response_model=RequestResponse)
+def update_request(request_id: int, updated_request: RequestUpdate, db: Session = Depends(get_db)):
+    request = db.query(Request).filter(Request.request_id == request_id).first()
+    if not request:
+        raise HTTPException(status_code=404, detail="Request not found")
+
+    request.units_received = updated_request.units_received
+    request.status = updated_request.status
+
     db.commit()
-    db.refresh(request_db)
-    return request_db
+    db.refresh(request)
+    return request
 
-# DELETE REQUEST
-@request_router.delete("/delete/{request_id}")
+# 🔹 Delete a request
+@request_router.delete("/{request_id}")
 def delete_request(request_id: int, db: Session = Depends(get_db)):
-    request_db = db.query(Request).filter(Request.request_id == request_id).first()
-    db.delete(request_db)
+    request = db.query(Request).filter(Request.request_id == request_id).first()
+    if not request:
+        raise HTTPException(status_code=404, detail="Request not found")
+    db.delete(request)
     db.commit()
     return {"message": "Request deleted successfully"}
+
+# 🔹 Get requests by city
+@request_router.get("/city/{city_name}", response_model=list[RequestResponse])
+def get_requests_by_city(city_name: str, db: Session = Depends(get_db)):
+    requests = db.query(Request).filter(Request.city.ilike(f"%{city_name}%")).all()
+    return requests
+
+# 🔹 Get requests by blood group
+@request_router.get("/blood_group/{blood_group}", response_model=list[RequestResponse])
+def get_requests_by_blood_group(blood_group: str, db: Session = Depends(get_db)):
+    requests = db.query(Request).filter(Request.blood_group == blood_group).all()
+    return requests

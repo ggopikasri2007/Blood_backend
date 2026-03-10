@@ -3,12 +3,13 @@ from db.database import Base
 from datetime import datetime
 
 class Request(Base):
-    __tablename__ = "requests"
+    __tablename__ = "request"
 
     request_id = Column(Integer, primary_key=True, index=True)
-    donor_name = Column(String, nullable=False)   # 👈 added
-    blood_group = Column(String, nullable=False)
-    city = Column(String, nullable=False)
-    contact_number = Column(String, nullable=False)
-    message = Column(String, nullable=True)
-    request_date = Column(DateTime, default=datetime.utcnow)
+    patient_name = Column(String(100), nullable=True)
+    blood_group = Column(String(5), nullable=False)
+    city = Column(String(100), nullable=False)
+    units_needed = Column(Integer, nullable=False, default=1)
+    units_received = Column(Integer, default=0)
+    status = Column(String(20), default="Pending")  # simplified from Enum
+    created_at = Column(DateTime, default=datetime.utcnow)
