@@ -162,7 +162,7 @@ def check_eligibility(user_id: int, db: Session = Depends(get_db)):
     return {
         "eligible": False,
         "remaining_days": remaining_days,
-        "next_eligible_date": next_eligible_date,
+        "next_eligible_date": next_eligible_date.strftime("%Y-%m-%d"),
         "message": f"You can donate after {remaining_days} days."
     }
 
@@ -210,7 +210,7 @@ def get_available_donors(db: Session = Depends(get_db)):
 
             if datetime.utcnow() < next_date:
                 status = "Not Available"
-                next_eligible_date = next_date
+                next_eligible_date = next_date.strftime("%Y-%m-%d")
 
         donors.append({
             "full_name": user.full_name,
