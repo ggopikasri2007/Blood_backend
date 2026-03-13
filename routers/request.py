@@ -4,10 +4,10 @@ from models.request import Request
 from schemas.request import RequestCreate, RequestUpdate, RequestResponse
 from dependencies import get_db
 
-# ✅ Router object
+
 request_router = APIRouter(prefix="/request", tags=["Request"])
 
-# 🔹 Create a new patient request
+
 @request_router.post("/", response_model=RequestResponse)
 def create_request(request: RequestCreate, db: Session = Depends(get_db)):
     new_request = Request(
